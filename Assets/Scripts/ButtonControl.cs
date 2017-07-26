@@ -41,12 +41,13 @@ public class ButtonControl : MonoBehaviour
     {
         if (GameControl.annimating)
             return;
+
         Debug.Log("clicked " + indexX + " " + indexY);
         GameControl.instance.OnTextureClick(indexX, indexY);
+
         StopCoroutine(ClickAnnim());
         StartCoroutine(ClickAnnim());
         //GetComponent<TweenScale>().Play(true);
-
     }
 
     private IEnumerator ClickAnnim()
