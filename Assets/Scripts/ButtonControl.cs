@@ -31,10 +31,13 @@ public class ButtonControl : MonoBehaviour
         indexY = y;
         //transform.position = new Vector3(indexX * GameControl.textureSize - GameControl.mapOffset, indexY * GameControl.textureSize - GameControl.mapOffset, 0);
     }
-
+    
     void OnPress(bool pressed)
     {
+        if (GameControl.annimating)
+            return;
         Debug.Log("OnPress " + pressed + " " + indexX + " " + indexY);
+        GameControl.instance.OnTexturePress(pressed, indexX, indexY);
     }
 
     private void OnClick()

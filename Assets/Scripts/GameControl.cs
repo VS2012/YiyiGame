@@ -15,6 +15,8 @@ public class GameControl : MonoBehaviour
     private static int[,] map = new int[mapSize, mapSize];
     private Struct2D selectFirst = new Struct2D();
     private Struct2D selectSecond = new Struct2D();
+    private Struct2D pressedFirst = new Struct2D();
+    private Struct2D pressedSecond = new Struct2D();
     private int clickCount;
 
     //private static List<int[,]> tobeErased = new List<int[,]>();
@@ -22,7 +24,8 @@ public class GameControl : MonoBehaviour
     private Dictionary<Struct2D, GameObject> objectMap = new Dictionary<Struct2D, GameObject>();
 
     public GameObject myTexture;
-    public Material[] materials = new Material[textureNum];
+    //public Material[] materials = new Material[textureNum];
+    public Texture[] textures = new Texture[textureNum];
     public static GameControl instance;
 
     private void Awake()
@@ -81,7 +84,7 @@ public class GameControl : MonoBehaviour
                     var newTexture = (GameObject)Instantiate(myTexture);
                     newTexture.gameObject.transform.parent = transform;
                     newTexture.GetComponent<ButtonControl>().SetPos(i, j);
-                    newTexture.GetComponent<UITexture>().material = materials[rand];
+                    newTexture.GetComponent<UITexture>().material.mainTexture =  textures[rand];
                     objectMap.Add(new Struct2D(i, j), newTexture);
                     TweenScale.Begin(newTexture, anniTime, new Vector3(textureSize, textureSize, 0));
                     TweenPosition.Begin(newTexture, anniTime, new Vector3(i * textureSize - mapOffset, j * textureSize - mapOffset, depth));
@@ -104,9 +107,23 @@ public class GameControl : MonoBehaviour
         }
     }
 
-    public void OnTexturePress(int x, int y)
+    public void OnTexturePress(bool pressed, int x, int y)
     {
-
+        if(pressed)
+        {
+            pressedFirst.x = x;
+            pressedFirst.y = y;
+        }
+        else
+        {
+            pressedSecond.x = x;
+            pressedSecond.y = y;
+            if (pressedFirst == pressedSecond)
+                return;
+            selectFirst = pressedFirst;
+            selectSecond = pressedSecond;
+            StartCoroutine(CheckGame());
+        }
     }
 
     public void OnTextureClick(int x, int y)
@@ -123,11 +140,12 @@ public class GameControl : MonoBehaviour
             selectSecond.y = y;
             clickCount = 0;
 
-            if (selectFirst.x == selectSecond.x && selectFirst.y == selectSecond.y)
+            if (selectFirst == selectSecond)
                 return;
             StartCoroutine(CheckGame());
         }
     }
+
 
     private IEnumerator CheckGame()
     {
@@ -159,9 +177,14 @@ public class GameControl : MonoBehaviour
         objectMap.Remove(selectFirst);
         objectMap.Remove(selectSecond);
 
-        TweenPosition.Begin(firstObj, 0.2f, new Vector3(selectSecond.x * textureSize - mapOffset, selectSecond.y * textureSize - mapOffset, 0));
-        TweenPosition.Begin(secondObj, 0.2f, new Vector3(selectFirst.x * textureSize - mapOffset, selectFirst.y * textureSize - mapOffset, 0));
-        yield return new WaitForSeconds(0.2f);
+        var pos1 = new Vector3(selectSecond.x * textureSize - mapOffset, selectSecond.y * textureSize - mapOffset, 0);
+        var pos2 = new Vector3(selectFirst.x * textureSize - mapOffset, selectFirst.y * textureSize - mapOffset, 0);
+        var time = (int)(Vector3.Distance(pos1, pos2) / textureSize) * 0.15f;
+        if (time > 0.5)
+            time = 0.5f;
+        TweenPosition.Begin(firstObj, time, pos1);
+        TweenPosition.Begin(secondObj, time, pos2);
+        yield return new WaitForSeconds(time);
         TweenScale.Begin(firstObj, 0.1f, Vector3.one * textureSize);
         TweenScale.Begin(secondObj, 0.1f, Vector3.one * textureSize);
         yield return new WaitForSeconds(0.1f);
@@ -291,6 +314,21 @@ public struct Struct2D
     {
         x = i;
         y = j;
+    }
+    
+    public bool Equals(Struct2D obj)
+    {
+        return x == obj.x && y == obj.y;
+    }
+
+    public static bool operator == (Struct2D first, Struct2D second)
+    {
+        return first.x == second.x && first.y == second.y;
+    }
+
+    public static bool operator !=(Struct2D first, Struct2D second)
+    {
+        return first.x != second.x || first.y != second.y;
     }
 }
 
