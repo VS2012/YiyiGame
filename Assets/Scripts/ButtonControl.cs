@@ -34,10 +34,10 @@ public class ButtonControl : MonoBehaviour
     
     void OnPress(bool pressed)
     {
-        if (GameControl.annimating)
-            return;
-        Debug.Log("OnPress " + pressed + " " + indexX + " " + indexY);
-        GameControl.instance.OnTexturePress(pressed, indexX, indexY);
+        //if (GameControl.annimating)
+            //return;
+        //Debug.Log("OnPress " + pressed + " " + indexX + " " + indexY);
+        //GameControl.instance.OnTexturePress(pressed, indexX, indexY);
     }
 
     private void OnClick()
@@ -48,6 +48,7 @@ public class ButtonControl : MonoBehaviour
         Debug.Log("clicked " + indexX + " " + indexY);
         GameControl.instance.OnTextureClick(indexX, indexY);
 
+        clicked = !clicked;
         StopCoroutine(ClickAnnim());
         StartCoroutine(ClickAnnim());
         //GetComponent<TweenScale>().Play(true);
@@ -55,19 +56,17 @@ public class ButtonControl : MonoBehaviour
 
     private IEnumerator ClickAnnim()
     {
-        if (!clicked)
+        if (clicked)
         {
             TweenScale.Begin(gameObject, 0.05f, new Vector3(0.8f, 0.8f, 0.8f) * GameControl.textureSize);
             yield return new WaitForSeconds(0.05f);
             TweenScale.Begin(gameObject, 0.05f, new Vector3(0.9f, 0.9f, 0.9f) * GameControl.textureSize);
             yield return new WaitForSeconds(0.05f);
-            clicked = true;
         }
         else
         {
             TweenScale.Begin(gameObject, 0.05f, Vector3.one * GameControl.textureSize);
             yield return new WaitForSeconds(0.05f);
-            clicked = false;
         }
     }
 
